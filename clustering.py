@@ -2,7 +2,8 @@
 import numpy as np
 import pickle
 import spacy
-from similarity import getDistance2, getDistance#this is not working prolly. fix this shit
+#import neuralcoref
+from similarity import getDistance2, getDistance1, getDistance3#this is not working prolly. fix this shit
 from collections import OrderedDict
 import pandas as pd
 import re
@@ -22,7 +23,7 @@ def doesexist(aspectset, aspects, cluster, delta, nlp, matrixg, matrixt):
     for i in range(len(aspectset)-1):
         for j in range(i+1, len(aspectset)):
             print (i, j)
-            if(cluster[getParent(i, cluster)]!= cluster[getParent(j, cluster)] and getDistance(aspectset[i], aspectset[j], nlp)<= delta):
+            if(cluster[getParent(i, cluster)]!= cluster[getParent(j, cluster)] and getDistance3(aspectset[i], aspectset[j], aspects, matrixg, matrixt)<= delta):
                 return True
 
     return False
@@ -37,7 +38,7 @@ def select(aspectset, aspects, cluster, delta, rank, nlp, matrixg, matrixt):
     for i in range(len(aspectset)-1):
         for j in range(i+1, len(aspectset)):
             print(i, j)
-            a= getDistance(aspectset[i], aspectset[j], nlp)
+            a= getDistance3(aspectset[i], aspectset[j], aspects, matrixg, matrixt)
             if (cluster[getParent(i, cluster)]!= cluster[getParent(j, cluster)] and a< min):
                 min= a
                 suspect= []#clear earlier storages
@@ -63,7 +64,7 @@ def select2(aspect, aspectset, aspects, cluster, delta, rank, rank2, count, nlp,
     index= -1
     count2= 0
     for word in aspectset:
-        a= getDistance(aspect, word, nlp)
+        a= getDistance3(aspect, word, aspects, matrixg, matrixt)
         if(a< min):
             min= a
             index= count2
@@ -77,7 +78,7 @@ def select2(aspect, aspectset, aspects, cluster, delta, rank, rank2, count, nlp,
 
 #make sure s greater than k. return final clusters!
 def cluster(aspects, k, s, delta):
-    aspects= sorted(aspects.items(), key= lambda x: abs(x[1][0]) + abs(x[1][1]), reverse= True)
+    aspects= sorted(aspects.items(), key= lambda x: abs(x[1][0]) + abs(x[1][1]), reverse= True)[:250]
     nlp= spacy.load('en_core_web_md')
     with open('matrixg.pickle', 'rb') as f:
         matrixg = pickle.load(f)
@@ -126,7 +127,9 @@ def cluster(aspects, k, s, delta):
             freqdict[aspectset[a]]= revs
 
 
-    freqdict= sorted(freqdict.items(), key= lambda x: x[1], reverse= True)
+    freqdict= sorted(freqdict.items(), key= lambda x: abs(x[1][0]) + abs(x[1][1]), reverse= True)
+    freqdict[0][1][0]= freqdict[0][1][0]/6
+    freqdict[0][1][1]= freqdict[0][1][1]/6
     return freqdict[:min(k, len(freqdict))]#dont return this now. again coreference this with cluster and then return
 
 
@@ -135,4 +138,4 @@ with open('suspects.pickle', 'rb') as f:
     suspect= pickle.load(f)
 
 print (len(suspect))
-print (cluster(suspect, 10, 25, 0.49))
+print (cluster(suspect, 10, 25, 0.15))

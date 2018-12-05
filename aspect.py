@@ -7,22 +7,21 @@ import spacy
 
 
 
-df= pd.read_csv('whiskeyreviews.csv')
+df= pd.read_csv('hotel_reviews.csv')
 nlp= spacy.load('en_core_web_md')
 stop_words= stopwords.words('english')
 #nltk.download('stopwords')
 reviews= []
-for i in range(len(df)):
-    if(df.loc[i, 'Bottle_name']== 'Nikka Whisky From The Barrel'):
-        text= df.loc[i, 'Review_Content']
-        text= nltk.word_tokenize(text)
-        text= " ".join([i for i in text if i not in stop_words])
-        reviews.append(text)
+for i in range(200):
+    text= df.loc[i, 'Description']
+    text= nltk.word_tokenize(text)
+    text= " ".join([i for i in text if i not in stop_words])
+    reviews.append(text)
 
 print (len(reviews))
 print (reviews[0])
-# with open('reviews', 'wb+') as f:
-#       pickle.dump(reviews, f)
+with open('reviews', 'wb+') as f:
+      pickle.dump(reviews, f)
 
 
 negatives = open("./negative.txt",encoding = "ISO-8859-1")
@@ -111,5 +110,5 @@ for review in reviews:
 
 print (len(suspect))
 print ((suspect))
-# with open('suspects.pickle', 'wb+') as f:
-#      pickle.dump(suspect, f)
+with open('suspects.pickle', 'wb+') as f:
+     pickle.dump(suspect, f)
